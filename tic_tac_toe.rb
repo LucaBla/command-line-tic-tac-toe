@@ -1,14 +1,15 @@
+# frozen_string_literal: true
+
 module TicTacToe
   BOARD_ROW_LINE = ' -------'
-  BOARD_ROW = ['|' ,' ','|',' ', '|',' ', '|']
-  BOARD_COLUMN = ['|','|','|','|','|','|','|']
-  DIAGONAL = [[2, 2], [4, 4], [6, 6]]
-  DIAGONAL2 = [[2, 6], [4, 4], [6, 2]]
+  DIAGONAL = [[2, 2], [4, 4], [6, 6]].freeze
+  DIAGONAL2 = [[2, 6], [4, 4], [6, 2]].freeze
+
   class Game
     attr_reader :playable_fields
 
     def initialize
-      @board = Array.new(8) # 7
+      @board = Array.new(8)
       start_game
     end
 
@@ -46,6 +47,7 @@ module TicTacToe
       end
     end
 
+    # sets the mark of the given player to the given position
     def set_mark(player, position)
       if playable_field?(position)
         @board[position[0]][position[1]] = player.mark
@@ -57,8 +59,9 @@ module TicTacToe
       end
     end
 
+    # checks if a player won the game
     def gameover?(player)
-      true if three_in_a_column?(player) || three_in_a_row?(player) || three_in_a_diagonal?(player) || board_full?
+      true if three_in_a_column?(player) || three_in_a_row?(player) || three_in_a_diagonal?(player)
     end
 
     def three_in_a_column?(player, summand = 0)
@@ -70,7 +73,6 @@ module TicTacToe
       return true if count == 3
 
       three_in_a_column?(player, summand + 2) if summand < 4
-      # if count != 3 then false end
     end
 
     def three_in_a_row?(player, summand = 0)
@@ -82,7 +84,6 @@ module TicTacToe
       return true if count == 3
 
       three_in_a_row?(player, summand + 2) if summand < 4
-      # if count != 3 then false end
     end
 
     def three_in_a_diagonal?(player)
@@ -106,19 +107,18 @@ module TicTacToe
 
     def start_game
       puts 'Do you wanna play against a human (0), a bot (1), or watch 2 bots (2)?'
-      players=Player.create_players(gets.chomp)
+      players = Player.create_players(gets.chomp)
       current_player = players[0]
       create_board
       print_board
-      p players
-      until current_player.play_round(self) == 'Gameover'
+      until current_player.play_round(self) == 'Gameover' || board_full? == true
         if current_player == players[0] then current_player = players[1]
         else
           current_player = players[0]
         end
       end
-      puts "#{current_player.mark} you won the Game!" unless board_full?
-      puts 'Its a Draw!' if board_full?
+      if (board_full? && gameover?(current_player)) || gameover?(current_player)
+        puts "#{current_player.mark} you won the Game!" else puts 'Its a Draw!' end
     end
   end
 
@@ -131,25 +131,27 @@ module TicTacToe
       select_mark
     end
 
+    # creates 2 players with the given amount of bots
     def self.create_players(amount_of_bots)
-      if amount_of_bots.to_i == 0
+      case amount_of_bots.to_i
+      when 0
         player_one = Player.new
         player_two = Player.new
-      elsif amount_of_bots.to_i == 1
+      when 1
         player_one = Player.new
         player_two = ComputerPlayer.new
-      elsif amount_of_bots.to_i == 2
+      when 2
         player_one = ComputerPlayer.new
         player_two = ComputerPlayer.new
       else
         puts 'try again:'
-        return self.create_players(gets.chomp)
+        return create_players(gets.chomp)
       end
       [player_one, player_two]
     end
 
     def select_mark
-      puts 'Select your mark!'
+      puts 'Select your mark! (only 1 char possible)'
       @mark = gets.chomp.chr
       puts ''
     end
@@ -162,6 +164,7 @@ module TicTacToe
       return 'Gameover' if game.gameover?(self)
     end
 
+    # turns the given string into an array of ints, multiplize them so they are the same dimension as the table
     def string_into_int_array(string)
       string = string.split(',')
       string[0] = string[0].to_i * 2
@@ -172,17 +175,17 @@ module TicTacToe
 
   class ComputerPlayer < Player
     def select_mark
-      puts 'Select Computers mark!'
+      puts 'Select Computers mark! (only 1 char possible)'
       @mark = gets.chomp.chr
       puts ''
     end
 
     def play_round(game)
+      sleep 1
       game.set_mark(self, game.playable_fields.sample)
       puts "#{@mark}'s turn:"
       puts ''
       game.print_board
-      sleep 1.5
       return 'Gameover' if game.gameover?(self)
     end
   end
