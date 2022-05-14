@@ -6,11 +6,11 @@ module TicTacToe
   DIAGONAL2 = [[2, 6], [4, 4], [6, 2]].freeze
 
   class Game
-    attr_reader :playable_fields
+    attr_reader :playable_fields, :board
 
     def initialize
       @board = Array.new(8)
-      start_game
+      # start_game
     end
 
     def create_board
@@ -108,6 +108,7 @@ module TicTacToe
     def start_game
       puts 'Do you wanna play against a human (0), a bot (1), or watch 2 bots (2)?'
       players = Player.create_players(gets.chomp)
+      system("clear")
       current_player = players[0]
       create_board
       print_board
@@ -159,7 +160,7 @@ module TicTacToe
     def play_round(game)
       puts "#{@mark} Enter the field you want to mark (row, column)."
       game.set_mark(self, string_into_int_array(gets.chomp))
-      puts ''
+      system("clear")
       game.print_board
       return 'Gameover' if game.gameover?(self)
     end
@@ -199,4 +200,4 @@ end
 
 include TicTacToe
 
-Game.new
+Game.new.start_game
